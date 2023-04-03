@@ -194,6 +194,36 @@ def print_tax_breakdown(gross_income, pension_contrib_percent=0, voluntary_pensi
         print(f"\033[1;34m Combined Taxes:\033[0m £{combined_taxes[0]:.2f}")
         print(f"\033[1;34m Take-home Amount:\033[0m £{take_home_amounts[0]:.2f}")
 
+def calculate_tax_savings(incomes, pension_contrib_percent, voluntary_pension_contrib):
+    taxes_no_contributions = calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contrib=0)
+    taxes_with_contributions = calculate_taxes(incomes, pension_contrib_percent, voluntary_pension_contrib)
+    combined_taxes_no_contributions = taxes_no_contributions[4]
+    combined_taxes_with_contributions = taxes_with_contributions[4]
+    tax_savings = combined_taxes_no_contributions - combined_taxes_with_contributions
+    return tax_savings
+
+def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5):
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 12))
+    fig.suptitle(f"Tax savings vs. voluntary pension contributions for an income of £{income}")
+
+    voluntary_contributions = np.linspace(0, income * max_voluntary_contrib, 1000)
+    tax_savings = calculate_tax_savings(np.array([income]), 0, voluntary_contributions)
+    tax_savings_percentage = tax_savings / voluntary_contributions * 100
+
+    ax1.plot(voluntary_contributions, tax_savings, label="Tax Savings", color="C0")
+    ax1.set_xlabel("Voluntary Pension Contributions (£)")
+    ax1.set_ylabel("Tax Savings (£)")
+    ax1.set_title("Tax Savings vs. Voluntary Pension Contributions")
+    ax1.grid()
+
+    ax2.plot(voluntary_contributions, tax_savings_percentage, label="Tax Savings", color="C0")
+    ax2.set_xlabel("Voluntary Pension Contributions (£)")
+    ax2.set_ylabel("Tax Savings as a Percentage of Contribution (%)")
+    ax2.set_title("Tax Savings Percentage vs. Voluntary Pension Contributions")
+    ax2.grid()
+
+    plt.show()
+
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         try:
@@ -201,6 +231,7 @@ if __name__ == "__main__":
             if gross_income >= 0:
                 # Provide a breakdown for some specific gross income
                 print_tax_breakdown(gross_income)
+                plot_tax_savings_vs_pension_contributions(gross_income)
             else:
                 raise ValueError("Gross income must be a non-negative number.")
         except ValueError as e:
