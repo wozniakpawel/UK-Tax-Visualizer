@@ -203,24 +203,24 @@ def calculate_tax_savings(incomes, pension_contrib_percent, voluntary_pension_co
     return tax_savings
 
 def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5):
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 12))
-    fig.suptitle(f"Tax savings vs. voluntary pension contributions for an income of £{income}")
+    fig, ax = plt.subplots(figsize=(8, 6))
+    fig.suptitle(f"Tax savings analysis for a gross income of £{income}")
 
     voluntary_contributions = np.linspace(0, income * max_voluntary_contrib, 1000)
     tax_savings = calculate_tax_savings(np.array([income]), 0, voluntary_contributions)
     tax_savings_percentage = tax_savings / voluntary_contributions * 100
 
-    ax1.plot(voluntary_contributions, tax_savings, label="Tax Savings", color="C0")
-    ax1.set_xlabel("Voluntary Pension Contributions (£)")
-    ax1.set_ylabel("Tax Savings (£)")
-    ax1.set_title("Tax Savings vs. Voluntary Pension Contributions")
-    ax1.grid()
+    _, _, _, _, combined_taxes, _, _ = calculate_taxes(np.array([income]), voluntary_pension_contrib=voluntary_contributions)
+    effective_tax_rate = combined_taxes / income * 100
 
-    ax2.plot(voluntary_contributions, tax_savings_percentage, label="Tax Savings", color="C0")
-    ax2.set_xlabel("Voluntary Pension Contributions (£)")
-    ax2.set_ylabel("Tax Savings as a Percentage of Contribution (%)")
-    ax2.set_title("Tax Savings Percentage vs. Voluntary Pension Contributions")
-    ax2.grid()
+    ax.plot(voluntary_contributions, tax_savings_percentage, label="Tax Savings as a Percentage of Contribution", color="C0")
+    ax.plot(voluntary_contributions, effective_tax_rate, label="Effective Tax Rate", color="C1")
+
+    ax.set_xlabel("Voluntary Pension Contributions (£)")
+    ax.set_ylabel("Percentage (%)")
+    ax.set_title("Tax Savings Percentage and Effective Tax Rate vs. Voluntary Pension Contributions")
+    ax.legend()
+    ax.grid()
 
     plt.show()
 
