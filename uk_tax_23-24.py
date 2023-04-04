@@ -160,14 +160,17 @@ def plot_data(ax1, ax2, include_student_loan=False):
     ax2.set_yticks(np.arange(0, 101, 10))  # Set Y-axis ticks at intervals of 10
     ax2.grid()
 
-def plot_graphs():
+def plot_graphs(save_plot=False):
     fig, (ax1, ax2) = plt.subplots(2, 2, figsize=(16, 12))
     fig.suptitle("Income Tax, National Insurance, and actual take-home pay (with and without Student Loan)")
 
     plot_data(ax1[0], ax2[0], include_student_loan=False)
     plot_data(ax1[1], ax2[1], include_student_loan=True)
 
-    plt.show()
+    if save_plot:
+        plt.savefig('tax_overview.png')
+    else:
+        plt.show()
 
 def print_tax_breakdown(gross_income, pension_contrib_percent=0, voluntary_pension_contrib=0):
     for include_student_loan in [True, False]:
@@ -203,7 +206,7 @@ def calculate_tax_savings(incomes, pension_contrib_percent, voluntary_pension_co
     tax_savings = combined_taxes_no_contributions - combined_taxes_with_contributions
     return tax_savings
 
-def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5):
+def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5, save_plot=False):
     fig, ax = plt.subplots(figsize=(8, 6))
     fig.suptitle(f"Tax savings analysis for a gross income of £{income}")
 
@@ -223,9 +226,12 @@ def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5)
     ax.legend()
     ax.grid()
 
-    plt.show()
+    if save_plot:
+        plt.savefig('tax_savings_single.png')
+    else:
+        plt.show()
 
-def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib_percentage=0.5):
+def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib_percentage=0.5, save_plot=False):
     fig = plt.figure(figsize=(18, 8))
     ax1 = fig.add_subplot(121, projection='3d')
     ax2 = fig.add_subplot(122, projection='3d')
@@ -256,7 +262,10 @@ def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib
     ax2.set_zlabel('Effective Tax Rate (%)')
     ax2.set_title('Effective Tax Rate vs. Income and Voluntary Pension Contributions')
 
-    plt.show()
+    if save_plot:
+        plt.savefig('tax_savings_overview.png')
+    else:
+        plt.show()
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
