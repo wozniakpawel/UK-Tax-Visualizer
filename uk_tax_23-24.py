@@ -3,6 +3,7 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 # Tax year specific variables
 # Personal allowance
@@ -224,6 +225,39 @@ def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5)
 
     plt.show()
 
+def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib_percentage=0.5):
+    fig = plt.figure(figsize=(18, 8))
+    ax1 = fig.add_subplot(121, projection='3d')
+    ax2 = fig.add_subplot(122, projection='3d')
+
+    incomes = np.arange(0, salary_top_range + 1000, 1000)
+    X, Y = np.meshgrid(incomes, np.linspace(0, max(incomes) * max_voluntary_contrib_percentage, len(incomes)))
+    Z1 = np.empty(X.shape)
+    Z2 = np.empty(X.shape)
+
+    for i, income in enumerate(incomes):
+        tax_savings = calculate_tax_savings(np.array([income]), 0, Y[:, i])
+        tax_savings_percentage = tax_savings / Y[:, i] * 100
+        _, _, _, _, combined_taxes, _, _ = calculate_taxes(np.array([income]), voluntary_pension_contrib=Y[:, i])
+        effective_tax_rate = combined_taxes / income * 100
+
+        Z1[:, i] = tax_savings_percentage
+        Z2[:, i] = effective_tax_rate
+
+    ax1.plot_surface(X / 1000, Y / 1000, Z1, cmap='viridis')
+    ax1.set_xlabel('Income (£k)')
+    ax1.set_ylabel('Voluntary Pension Contributions (£k)')
+    ax1.set_zlabel('Tax Savings as a Percentage of Contribution (%)')
+    ax1.set_title('Tax Savings Percentage vs. Income and Voluntary Pension Contributions')
+
+    ax2.plot_surface(X / 1000, Y / 1000, Z2, cmap='viridis')
+    ax2.set_xlabel('Income (£k)')
+    ax2.set_ylabel('Voluntary Pension Contributions (£k)')
+    ax2.set_zlabel('Effective Tax Rate (%)')
+    ax2.set_title('Effective Tax Rate vs. Income and Voluntary Pension Contributions')
+
+    plt.show()
+
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         try:
@@ -240,3 +274,4 @@ if __name__ == "__main__":
     else:
         # Plot graphs for an income range
         plot_graphs()
+        plot_tax_savings_3d()
