@@ -1,93 +1,105 @@
 #!/usr/bin/env python3
 
 import sys
-import numpy as np
+
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
 
 # Tax year specific variables
 # Personal allowance
-personal_allowance = 12570
-personal_allowance_taper = 100000
+PERSONAL_ALLOWANCE = 12570
+PERSONAL_ALLOWANCE_TAPER = 100000
 
 # Income tax
-basic_rate_limit = 37700
-higher_rate_limit = 125140
-basic_rate = 0.20
-higher_rate = 0.40
-additional_rate = 0.45
+BASIC_RATE_LIMIT = 37700
+HIGHER_RATE_LIMIT = 125140
+BASIC_RATE = 0.20
+HIGHER_RATE = 0.40
+ADDITIONAL_RATE = 0.45
 
 # National Insurance
-ni_primary_threshold = 12570
-ni_upper_limit = 50270
-ni_rate_1 = 0.12
-ni_rate_2 = 0.02
+NI_PRIMARY_THERSHOLD = 12570
+NI_UPPER_LIMIT = 50270
+NI_RATE_1 = 0.12
+NI_RATE_2 = 0.02
 
-# Student loan repayments
-student_loan_plan_2_threshold = 27295
-student_loan_plan_2_rate = 0.09
+# Student Loan Repayments
+STUDENT_LOAN_PLAN_2_THRESHOLD = 27295
+STUDENT_LOAN_PLAN_2_RATE = 0.09
 
-# Salary range
-salary_top_range = 250000
+# Salary Range
+SALARY_TOP_RANGE = 250000
 
-def adjusted_personal_allowance(incomes):
+
+def adjusted_personal_allowance(incomes:np.ndarray) -> np.ndarray:
+    """
+    Calculate the Tapered Personal Allowance
+    """
     reduction_rate = 0.5
 
-    personal_allowance_tapered = np.where(
-        incomes > personal_allowance_taper,
-        np.maximum(personal_allowance - ((incomes - personal_allowance_taper) * reduction_rate), 0),
-        personal_allowance,
+    return np.where(
+        incomes > PERSONAL_ALLOWANCE_TAPER,
+        np.maximum(PERSONAL_ALLOWANCE - ((incomes - PERSONAL_ALLOWANCE_TAPER) * reduction_rate), 0),
+        PERSONAL_ALLOWANCE,
     )
 
-    return personal_allowance_tapered
 
-def income_tax(taxable_income):
+def income_tax(taxable_income:np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Calculate 20,40,45 % Tax Payable
+    """
 
     tax_20 = np.where(
-        taxable_income <= basic_rate_limit,
-        taxable_income * basic_rate,
-        basic_rate_limit * basic_rate,
+        taxable_income <= BASIC_RATE_LIMIT,
+        taxable_income * BASIC_RATE,
+        BASIC_RATE_LIMIT * BASIC_RATE,
     )
 
     tax_40 = np.where(
-        (taxable_income > basic_rate_limit) & (taxable_income <= higher_rate_limit),
-        (taxable_income - basic_rate_limit) * higher_rate,
+        (taxable_income > BASIC_RATE_LIMIT) & (taxable_income <= HIGHER_RATE_LIMIT),
+        (taxable_income - BASIC_RATE_LIMIT) * HIGHER_RATE,
         np.where(
-            taxable_income > higher_rate_limit,
-            (higher_rate_limit - basic_rate_limit) * higher_rate,
+            taxable_income > HIGHER_RATE_LIMIT,
+            (HIGHER_RATE_LIMIT - BASIC_RATE_LIMIT) * HIGHER_RATE,
             0,
         ),
     )
 
     tax_45 = np.where(
-        taxable_income > higher_rate_limit,
-        (taxable_income - higher_rate_limit) * additional_rate,
+        taxable_income > HIGHER_RATE_LIMIT,
+        (taxable_income - HIGHER_RATE_LIMIT) * ADDITIONAL_RATE,
         0,
     )
 
     return tax_20, tax_40, tax_45
 
-def national_insurance(incomes):
-    ni = np.where(
-        incomes <= ni_primary_threshold,
+
+def national_insurance(incomes:np.ndarray) -> np.ndarray:
+    """
+    Calculate National Insurance
+    """
+    return np.where(
+        incomes <= NI_PRIMARY_THERSHOLD,
         0,
         np.where(
-            incomes <= ni_upper_limit,
-            (incomes - ni_primary_threshold) * ni_rate_1,
-            (ni_upper_limit - ni_primary_threshold) * ni_rate_1 + (incomes - ni_upper_limit) * ni_rate_2,
+            incomes <= NI_UPPER_LIMIT,
+            (incomes - NI_PRIMARY_THERSHOLD) * NI_RATE_1,
+            (NI_UPPER_LIMIT - NI_PRIMARY_THERSHOLD) * NI_RATE_1 + (incomes - NI_UPPER_LIMIT) * NI_RATE_2,
         ),
     )
 
-    return ni
 
-def student_loan_repayment_plan_2(incomes):
-    repayments = np.where(
-        incomes > student_loan_plan_2_threshold,
-        (incomes - student_loan_plan_2_threshold) * student_loan_plan_2_rate,
+def student_loan_repayment_plan_2(incomes:np.ndarray) -> np.ndarray:
+    """
+    Calculate Student Loan Repayments
+    """
+    return np.where(
+        incomes > STUDENT_LOAN_PLAN_2_THRESHOLD,
+        (incomes - STUDENT_LOAN_PLAN_2_THRESHOLD) * STUDENT_LOAN_PLAN_2_RATE,
         0,
     )
 
-    return repayments
+
 
 def calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contrib=0, include_student_loan=False):
     pension_contributions = incomes * pension_contrib_percent
@@ -98,9 +110,10 @@ def calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contri
     taxable_income = np.maximum(incomes_after_pension - personal_allowance_tapered, 0)
     tax_20, tax_40, tax_45 = income_tax(taxable_income)
     income_taxes = tax_20 + tax_40 + tax_45
-    national_insurances = national_insurance(incomes)
-    student_loan_repayments = np.zeros_like(incomes)
 
+    national_insurances = national_insurance(incomes)
+
+    student_loan_repayments = np.zeros_like(incomes)
     if include_student_loan:
         student_loan_repayments = student_loan_repayment_plan_2(incomes)
 
@@ -109,8 +122,45 @@ def calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contri
 
     return tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments
 
+
+def calculate_tax_savings(incomes, pension_contrib_percent, voluntary_pension_contrib):
+    taxes_no_contributions = calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contrib=0)
+    taxes_with_contributions = calculate_taxes(incomes, pension_contrib_percent, voluntary_pension_contrib)
+    combined_taxes_no_contributions = taxes_no_contributions[4]
+    combined_taxes_with_contributions = taxes_with_contributions[4]
+    tax_savings = combined_taxes_no_contributions - combined_taxes_with_contributions
+    return tax_savings
+
+
+def print_tax_breakdown(gross_income, pension_contrib_percent=0, voluntary_pension_contrib=0):
+    for include_student_loan in [True, False]:
+        print(f"\n\033[1;32mWith{'out' * (not include_student_loan)} student loan:\033[0m")
+
+        tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments = calculate_taxes(
+            np.array([gross_income]), pension_contrib_percent, voluntary_pension_contrib, include_student_loan
+        )
+
+        print(f"\033[1;34m Gross Income:\033[0m £{gross_income:.2f}")
+        print(f"\033[1;34m Pre-tax Pension Contributions:\033[0m £{gross_income * pension_contrib_percent:.2f}")
+        print(f"\033[1;34m Voluntary Pension Contributions:\033[0m £{voluntary_pension_contrib:.2f}")
+        print(f"\033[1;34m Adjusted Gross Income:\033[0m £{gross_income - gross_income * pension_contrib_percent - voluntary_pension_contrib:.2f}")
+        print(f"\033[1;34m Personal Allowance:\033[0m £{adjusted_personal_allowance(np.array([gross_income - gross_income * pension_contrib_percent - voluntary_pension_contrib]))[0]:.2f}")
+        print(f"\033[1;34m Taxable Income:\033[0m £{max(gross_income - gross_income * pension_contrib_percent - voluntary_pension_contrib - adjusted_personal_allowance(np.array([gross_income - gross_income * pension_contrib_percent - voluntary_pension_contrib]))[0], 0):.2f}")
+        print(f"\033[1;34m Income Tax:\033[0m £{sum([tax_20[0], tax_40[0], tax_45[0]])}")
+        print(f"  \033[1;34m 20% Rate:\033[0m £{tax_20[0]:.2f}")
+        print(f"  \033[1;34m 40% Rate:\033[0m £{tax_40[0]:.2f}")
+        print(f"  \033[1;34m 45% Rate:\033[0m £{tax_45[0]:.2f}")
+        print(f"\033[1;34m National Insurance:\033[0m £{national_insurances[0]:.2f}")
+
+        if include_student_loan:
+            print(f"\033[1;34m Student Loan Repayment Plan 2:\033[0m £{student_loan_repayments[0]:.2f}")
+
+        print(f"\033[1;34m Combined Taxes:\033[0m £{combined_taxes[0]:.2f}")
+        print(f"\033[1;34m Take-home Amount:\033[0m £{take_home_amounts[0]:.2f}")
+
+
 def plot_data(ax1, ax2, include_student_loan=False):
-    incomes = np.linspace(0, salary_top_range, 1000)
+    incomes = np.linspace(0, SALARY_TOP_RANGE, 1000)
 
     tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments = calculate_taxes(
         incomes, include_student_loan=include_student_loan
@@ -174,40 +224,6 @@ def plot_graphs(save_plot=False):
     else:
         plt.show()
 
-def print_tax_breakdown(gross_income, pension_contrib_percent=0, voluntary_pension_contrib=0):
-    for include_student_loan in [True, False]:
-        print(f"\n\033[1;32mWith{'out' * (not include_student_loan)} student loan:\033[0m")
-
-        tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments = calculate_taxes(
-            np.array([gross_income]), pension_contrib_percent, voluntary_pension_contrib, include_student_loan
-        )
-
-        print(f"\033[1;34m Gross Income:\033[0m £{gross_income:.2f}")
-        print(f"\033[1;34m Pre-tax Pension Contributions:\033[0m £{gross_income * pension_contrib_percent:.2f}")
-        print(f"\033[1;34m Voluntary Pension Contributions:\033[0m £{voluntary_pension_contrib:.2f}")
-        print(f"\033[1;34m Adjusted Gross Income:\033[0m £{gross_income - gross_income * pension_contrib_percent - voluntary_pension_contrib:.2f}")
-        print(f"\033[1;34m Personal Allowance:\033[0m £{adjusted_personal_allowance(np.array([gross_income - gross_income * pension_contrib_percent - voluntary_pension_contrib]))[0]:.2f}")
-        print(f"\033[1;34m Taxable Income:\033[0m £{max(gross_income - gross_income * pension_contrib_percent - voluntary_pension_contrib - adjusted_personal_allowance(np.array([gross_income - gross_income * pension_contrib_percent - voluntary_pension_contrib]))[0], 0):.2f}")
-        print(f"\033[1;34m Income Tax:\033[0m £{sum([tax_20[0], tax_40[0], tax_45[0]])}")
-        print(f"  \033[1;34m 20% Rate:\033[0m £{tax_20[0]:.2f}")
-        print(f"  \033[1;34m 40% Rate:\033[0m £{tax_40[0]:.2f}")
-        print(f"  \033[1;34m 45% Rate:\033[0m £{tax_45[0]:.2f}")
-        print(f"\033[1;34m National Insurance:\033[0m £{national_insurances[0]:.2f}")
-
-        if include_student_loan:
-            print(f"\033[1;34m Student Loan Repayment Plan 2:\033[0m £{student_loan_repayments[0]:.2f}")
-
-        print(f"\033[1;34m Combined Taxes:\033[0m £{combined_taxes[0]:.2f}")
-        print(f"\033[1;34m Take-home Amount:\033[0m £{take_home_amounts[0]:.2f}")
-
-def calculate_tax_savings(incomes, pension_contrib_percent, voluntary_pension_contrib):
-    taxes_no_contributions = calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contrib=0)
-    taxes_with_contributions = calculate_taxes(incomes, pension_contrib_percent, voluntary_pension_contrib)
-    combined_taxes_no_contributions = taxes_no_contributions[4]
-    combined_taxes_with_contributions = taxes_with_contributions[4]
-    tax_savings = combined_taxes_no_contributions - combined_taxes_with_contributions
-    return tax_savings
-
 def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5, save_plot=False):
     fig, ax = plt.subplots(figsize=(8, 6))
     fig.suptitle(f"Tax savings analysis for a gross income of £{income}")
@@ -233,7 +249,7 @@ def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5,
     else:
         plt.show()
 
-def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib_percentage=0.5, save_plot=False):
+def plot_tax_savings_3d(salary_top_range=SALARY_TOP_RANGE, max_voluntary_contrib_percentage=0.5, save_plot=False):
     fig = plt.figure(figsize=(18, 8))
     ax1 = fig.add_subplot(121, projection='3d')
     ax2 = fig.add_subplot(122, projection='3d')
@@ -268,6 +284,8 @@ def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib
         plt.savefig('tax_savings_overview.png')
     else:
         plt.show()
+
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
