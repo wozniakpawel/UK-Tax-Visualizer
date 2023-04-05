@@ -137,9 +137,10 @@ def plot_data(ax1, ax2, include_student_loan=False):
     ax1.plot(incomes / 1000, combined_taxes / 1000, label=combined_label, color="C3")
     ax1.plot(incomes / 1000, take_home_amounts / 1000, label="Take-home Amount", color="C4")
 
+    ax1_title = "Taxes, NI, Student Loan Repayment, and Take-home Amount" if include_student_loan else "Taxes, National Insurance, and Take-home Amount"
     ax1.set_xlabel("Gross Income (£k)")
     ax1.set_ylabel("Total Amount (£k)")
-    ax1.set_title("Taxes, National Insurance, and Take-home Amount")
+    ax1.set_title(ax1_title)
     ax1.legend()
     ax1.grid()
 
@@ -152,9 +153,10 @@ def plot_data(ax1, ax2, include_student_loan=False):
     ax2.plot(incomes / 1000, combined_taxes_percentage, label=combined_label + " (%)", color="C3")
     ax2.plot(incomes / 1000, marginal_combined_taxes, label=marginal_label, linestyle='--', color="C4")
 
+    ax2_title = "Taxes, NI, and Student Loan Repayment as Percentage of Income" if include_student_loan else "Taxes and NI as Percentage of Income"
     ax2.set_xlabel("Gross Income (£k)")
     ax2.set_ylabel("Percentage of Income (%)")
-    ax2.set_title("Taxes, NI, and Student Loan Repayment as Percentage of Income")
+    ax2.set_title(ax2_title)
     ax2.legend()
     ax2.set_ylim(0, 100)  # Set Y-axis limits for the bottom graph
     ax2.set_yticks(np.arange(0, 101, 10))  # Set Y-axis ticks at intervals of 10
