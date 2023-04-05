@@ -288,19 +288,30 @@ def plot_tax_savings_3d(salary_top_range=SALARY_TOP_RANGE, max_voluntary_contrib
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        try:
-            gross_income = float(sys.argv[1])
-            if gross_income >= 0:
-                # Provide a breakdown for some specific gross income
-                print_tax_breakdown(gross_income)
-                plot_tax_savings_vs_pension_contributions(gross_income)
-            else:
-                raise ValueError("Gross income must be a non-negative number.")
-        except ValueError as e:
-            print(f"Invalid argument. Expected a number, got {sys.argv[1]}")
-            print(str(e))
-    else:
+    GENERIC = False
+    if GENERIC:
         # Plot graphs for an income range
         plot_graphs()
         plot_tax_savings_3d()
+
+    if len(sys.argv) == 2:
+        try:
+            gross_income = float(sys.argv[1])
+        except ValueError as e:
+            print(f"Invalid argument. Expected a number, got {sys.argv[1]}")
+            print(str(e))
+            raise e
+    else:
+        try:
+            gross_income = float(input("Annual Salary: "))
+        except ValueError as e:
+            print(f"Invalid input. Expected a number.")
+            print(str(e))
+            raise e
+
+    if gross_income >= 0:
+        # Provide a breakdown for some specific gross income
+        print_tax_breakdown(gross_income)
+        plot_tax_savings_vs_pension_contributions(gross_income)
+    else:
+        raise ValueError("Gross income must be a non-negative number.")
