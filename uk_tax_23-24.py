@@ -288,12 +288,6 @@ def plot_tax_savings_3d(salary_top_range=SALARY_TOP_RANGE, max_voluntary_contrib
 
 
 if __name__ == "__main__":
-    GENERIC = False
-    if GENERIC:
-        # Plot graphs for an income range
-        plot_graphs()
-        plot_tax_savings_3d()
-
     if len(sys.argv) == 2:
         try:
             gross_income = float(sys.argv[1])
@@ -302,6 +296,12 @@ if __name__ == "__main__":
             print(str(e))
             raise e
     else:
+        # Plot graphs for an income range
+        plot_graphs()
+        plot_tax_savings_3d()
+    
+    if False:
+    	# Not Currently Used
         try:
             gross_income = float(input("Annual Salary: "))
         except ValueError as e:
