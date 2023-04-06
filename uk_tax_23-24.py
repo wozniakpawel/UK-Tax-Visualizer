@@ -230,7 +230,7 @@ def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5,
 
     voluntary_contributions = np.linspace(0, income * max_voluntary_contrib, 1000)
     tax_savings = calculate_tax_savings(np.array([income]), 0, voluntary_contributions)
-    tax_savings_percentage = tax_savings / voluntary_contributions * 100
+    tax_savings_percentage = (tax_savings / voluntary_contributions) * 100
 
     combined_taxes = calculate_taxes(np.array([income]), voluntary_pension_contrib=voluntary_contributions)[4]
     effective_tax_rate = (combined_taxes / income) * 100
@@ -305,7 +305,7 @@ if __name__ == "__main__":
         try:
             gross_income = float(input("Annual Salary: "))
         except ValueError as e:
-            print(f"Invalid input. Expected a number.")
+            print("Invalid input. Expected a number.")
             print(str(e))
             raise e
 
