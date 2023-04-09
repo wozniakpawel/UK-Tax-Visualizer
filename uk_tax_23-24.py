@@ -117,11 +117,11 @@ def plot_data(ax1, ax2, include_student_loan=False):
     )
 
     income_taxes = tax_20 + tax_40 + tax_45
-    income_taxes_percentage = income_taxes / incomes * 100
-    national_insurances_percentage = national_insurances / incomes * 100
-    combined_taxes_percentage = combined_taxes / incomes * 100
-    student_loan_repayments_percentage = student_loan_repayments / incomes * 100
-    marginal_combined_taxes = np.gradient(combined_taxes) / np.gradient(incomes) * 100
+    income_taxes_percentage = (income_taxes / incomes) * 100
+    national_insurances_percentage = (national_insurances / incomes) * 100
+    combined_taxes_percentage = (combined_taxes / incomes) * 100
+    student_loan_repayments_percentage = (student_loan_repayments / incomes) * 100
+    marginal_combined_taxes = (np.gradient(combined_taxes) / np.gradient(incomes)) * 100
 
     combined_label = "Combined Income Tax & NI"
     if include_student_loan:
@@ -214,10 +214,10 @@ def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5,
 
     voluntary_contributions = np.linspace(0, income * max_voluntary_contrib, 1000)
     tax_savings = calculate_tax_savings(np.array([income]), 0, voluntary_contributions)
-    tax_savings_percentage = tax_savings / voluntary_contributions * 100
+    tax_savings_percentage = (tax_savings / voluntary_contributions) * 100
 
     _, _, _, _, combined_taxes, _, _ = calculate_taxes(np.array([income]), voluntary_pension_contrib=voluntary_contributions)
-    effective_tax_rate = combined_taxes / income * 100
+    effective_tax_rate = (combined_taxes / income) * 100
 
     ax.plot(voluntary_contributions, tax_savings_percentage, label="Tax Savings as a Percentage of Contribution", color="C0")
     ax.plot(voluntary_contributions, effective_tax_rate, label="Effective Tax Rate", color="C1")
@@ -245,9 +245,9 @@ def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib
 
     for i, income in enumerate(incomes):
         tax_savings = calculate_tax_savings(np.array([income]), 0, Y[:, i])
-        tax_savings_percentage = tax_savings / Y[:, i] * 100
+        tax_savings_percentage = (tax_savings / Y[:, i]) * 100
         _, _, _, _, combined_taxes, _, _ = calculate_taxes(np.array([income]), voluntary_pension_contrib=Y[:, i])
-        effective_tax_rate = combined_taxes / income * 100
+        effective_tax_rate = (combined_taxes / income) * 100
 
         Z1[:, i] = tax_savings_percentage
         Z2[:, i] = effective_tax_rate
