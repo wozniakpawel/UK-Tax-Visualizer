@@ -269,6 +269,11 @@ def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib
     else:
         plt.show()
 
+def generate_readme_graphs():
+    plot_graphs(save_plot=True)
+    plot_tax_savings_3d(save_plot=True)
+    plot_tax_savings_vs_pension_contributions(150000, save_plot=True)
+
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         try:
