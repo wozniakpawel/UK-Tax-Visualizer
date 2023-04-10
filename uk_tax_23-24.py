@@ -111,7 +111,7 @@ def calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contri
     return tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments
 
 def plot_data(ax1, ax2, include_student_loan=False):
-    incomes = np.linspace(0, salary_top_range, 1000)
+    incomes = np.linspace(0, salary_top_range, 1001)
 
     tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments = calculate_taxes(
         incomes, include_student_loan=include_student_loan
@@ -213,7 +213,7 @@ def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5,
     fig, ax = plt.subplots(figsize=(8, 6))
     fig.suptitle(f"Tax savings analysis for a gross income of £{income}")
 
-    voluntary_contributions = np.linspace(0, income * max_voluntary_contrib, 1000)
+    voluntary_contributions = np.linspace(0, income * max_voluntary_contrib, 1001)
     tax_savings = calculate_tax_savings(np.array([income]), 0, voluntary_contributions)
     tax_savings_percentage = (tax_savings / voluntary_contributions) * 100
 
