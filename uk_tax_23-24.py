@@ -24,6 +24,9 @@ ni_rate_1 = 0.12
 ni_rate_2 = 0.02
 
 # Student loan repayments
+student_loan_plan_1_threshold = 22015
+student_loan_plan_1_rate = 0.09
+
 student_loan_plan_2_threshold = 27295
 student_loan_plan_2_rate = 0.09
 
@@ -80,16 +83,27 @@ def national_insurance(incomes):
 
     return ni
 
-def student_loan_repayment_plan_2(incomes):
-    repayments = np.where(
-        incomes > student_loan_plan_2_threshold,
-        (incomes - student_loan_plan_2_threshold) * student_loan_plan_2_rate,
-        0,
-    )
-
+# Can expand for further student loan repayment plans (3/4/5) in future
+def student_loan_repayment_plan(incomes, student_loan_plan_number=2):
+    if student_loan_plan_number == 1:
+        repayments = np.where(
+            incomes > student_loan_plan_1_threshold,
+            (incomes - student_loan_plan_1_threshold) * student_loan_plan_1_rate,
+            0,
+        )
+    elif student_loan_plan_number == 2:
+        repayments = np.where(
+            incomes > student_loan_plan_2_threshold,
+            (incomes - student_loan_plan_2_threshold) * student_loan_plan_2_rate,
+            0,
+        )
+    else:
+        print(f"We don't account for Student Loan plan number {student_loan_plan_number} yet - repayments will be 0")
+        repayments = 0
+    print(f"Student loan plan number is {student_loan_plan_number} and total repayments are \033[1;34m£{repayments}\033[0m")
     return repayments
 
-def calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contrib=0, include_student_loan=False):
+def calculate_taxes(incomes, pension_contrib_percent=0, student_loan_plan_number=2, voluntary_pension_contrib=0, include_student_loan=False):
     pension_contributions = incomes * pension_contrib_percent
     incomes_after_pension = incomes - pension_contributions - voluntary_pension_contrib
 
@@ -102,7 +116,7 @@ def calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contri
     student_loan_repayments = np.zeros_like(incomes)
 
     if include_student_loan:
-        student_loan_repayments = student_loan_repayment_plan_2(incomes)
+        student_loan_repayments = student_loan_repayment_plan(incomes,student_loan_plan_number)
 
     combined_taxes = income_taxes + national_insurances + student_loan_repayments
     # Need to account for any pension_contributions taken off here, if we've passed in a value
@@ -175,12 +189,12 @@ def plot_graphs(save_plot=False):
     else:
         plt.show()
 
-def print_tax_breakdown(gross_income, pension_contrib_percent=0, voluntary_pension_contrib=0):
+def print_tax_breakdown(gross_income, student_loan_plan_number=2, pension_contrib_percent=0, voluntary_pension_contrib=0):
     for include_student_loan in [True, False]:
         print(f"\n\033[1;32mWith{'out' * (not include_student_loan)} student loan:\033[0m")
 
         tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments = calculate_taxes(
-            np.array([gross_income]), pension_contrib_percent, voluntary_pension_contrib, include_student_loan
+            np.array([gross_income]), pension_contrib_percent, student_loan_plan_number, voluntary_pension_contrib, include_student_loan
         )
 
         print(f"\033[1;34m Gross Income:\033[0m £{gross_income:.2f}")
@@ -196,14 +210,14 @@ def print_tax_breakdown(gross_income, pension_contrib_percent=0, voluntary_pensi
         print(f"\033[1;34m National Insurance:\033[0m £{national_insurances[0]:.2f}")
 
         if include_student_loan:
-            print(f"\033[1;34m Student Loan Repayment Plan 2:\033[0m £{student_loan_repayments[0]:.2f}")
+            print(f"\033[1;34m Student Loan Repayment Plan {student_loan_plan_number}:\033[0m £{student_loan_repayments[0]:.2f}")
 
         print(f"\033[1;34m Combined Taxes:\033[0m £{combined_taxes[0]:.2f}")
         print(f"\033[1;34m Take-home Amount:\033[0m £{take_home_amounts[0]:.2f}")
 
-def calculate_tax_savings(incomes, pension_contrib_percent, voluntary_pension_contrib):
-    taxes_no_contributions = calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contrib=0)
-    taxes_with_contributions = calculate_taxes(incomes, pension_contrib_percent, voluntary_pension_contrib)
+def calculate_tax_savings(incomes, pension_contrib_percent, voluntary_pension_contrib,student_loan_plan_number=2):
+    taxes_no_contributions = calculate_taxes(incomes, pension_contrib_percent, student_loan_plan_number, voluntary_pension_contrib=0)
+    taxes_with_contributions = calculate_taxes(incomes, pension_contrib_percent, student_loan_plan_number, voluntary_pension_contrib)
     combined_taxes_no_contributions = taxes_no_contributions[4]
     combined_taxes_with_contributions = taxes_with_contributions[4]
     tax_savings = combined_taxes_no_contributions - combined_taxes_with_contributions
@@ -271,7 +285,22 @@ def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib
         plt.show()
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
+    # Expecting 1 or 2 arguments - 1 for salary (e.g 120000) and 1 for Student Loan Plan Number (1 or 2 currently)
+    if len(sys.argv) == 3: # All 2 arguments passed in (salary and student loan number)
+        try:
+            gross_income = float(sys.argv[1])
+            student_loan_plan_number = int(sys.argv[2])
+            if gross_income >= 0 and student_loan_plan_number >= 1:
+                # Provide a breakdown for some specific gross income
+                print(f"Student loan number passed is: {student_loan_plan_number}")
+                print_tax_breakdown(gross_income,student_loan_plan_number)
+                plot_tax_savings_vs_pension_contributions(gross_income)
+            else:
+                raise ValueError("Gross income must be a non-negative number, and student loan plan number above 1.")
+        except ValueError as e:
+            print(f"Invalid argument. Expected a number, got {sys.argv[1]}")
+            print(str(e))
+    elif len(sys.argv) == 2: # Only 1 argument passed in (salary) - (student loan still defaults to 2 anyway and shows as 2 outputs, as per the original function)
         try:
             gross_income = float(sys.argv[1])
             if gross_income >= 0:
@@ -279,11 +308,12 @@ if __name__ == "__main__":
                 print_tax_breakdown(gross_income)
                 plot_tax_savings_vs_pension_contributions(gross_income)
             else:
-                raise ValueError("Gross income must be a non-negative number.")
+                raise ValueError("Gross income must be a non-negative number")
         except ValueError as e:
             print(f"Invalid argument. Expected a number, got {sys.argv[1]}")
             print(str(e))
     else:
+        print(f"No args passed so plotting graphs only")
         # Plot graphs for an income range
         plot_graphs()
         plot_tax_savings_3d()
