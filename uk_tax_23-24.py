@@ -105,7 +105,8 @@ def calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contri
         student_loan_repayments = student_loan_repayment_plan_2(incomes)
 
     combined_taxes = income_taxes + national_insurances + student_loan_repayments
-    take_home_amounts = incomes - combined_taxes
+    # Need to account for any pension_contributions taken off here, if we've passed in a value
+    take_home_amounts = incomes_after_pension - combined_taxes
 
     return tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments
 
