@@ -105,7 +105,8 @@ def calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contri
         student_loan_repayments = student_loan_repayment_plan_2(incomes)
 
     combined_taxes = income_taxes + national_insurances + student_loan_repayments
-    take_home_amounts = incomes - combined_taxes
+    # Need to account for any pension_contributions taken off here, if we've passed in a value
+    take_home_amounts = incomes_after_pension - combined_taxes
 
     return tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments
 
@@ -268,6 +269,11 @@ def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib
         plt.savefig('tax_savings_overview.png')
     else:
         plt.show()
+
+def generate_readme_graphs():
+    plot_graphs(save_plot=True)
+    plot_tax_savings_3d(save_plot=True)
+    plot_tax_savings_vs_pension_contributions(150000, save_plot=True)
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
