@@ -111,8 +111,7 @@ def calculate_taxes(incomes, pension_contrib_percent=0, voluntary_pension_contri
     return tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments
 
 def plot_data(ax1, ax2, include_student_loan=False):
-    incomes = np.linspace(0, salary_top_range, 1001)
-    incomes[incomes == 0] = 1
+    incomes = np.arange(500, salary_top_range + 500, 500)
     tax_20, tax_40, tax_45, national_insurances, combined_taxes, take_home_amounts, student_loan_repayments = calculate_taxes(
         incomes, include_student_loan=include_student_loan
     )
@@ -213,7 +212,7 @@ def plot_tax_savings_vs_pension_contributions(income, max_voluntary_contrib=0.5,
     fig, ax = plt.subplots(figsize=(8, 6))
     fig.suptitle(f"Tax savings analysis for a gross income of £{income}")
 
-    voluntary_contributions = np.linspace(0, income * max_voluntary_contrib, 1001)
+    voluntary_contributions = np.arange(500, income * max_voluntary_contrib, 100)
     tax_savings = calculate_tax_savings(np.array([income]), 0, voluntary_contributions)
     tax_savings_percentage = (tax_savings / voluntary_contributions) * 100
 
@@ -239,10 +238,8 @@ def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib
     ax1 = fig.add_subplot(121, projection='3d')
     ax2 = fig.add_subplot(122, projection='3d')
 
-    incomes = np.arange(0, salary_top_range + 1000, 1000)
-    incomes[incomes == 0] = 1
-    X, Y = np.meshgrid(incomes, np.linspace(0, max(incomes) * max_voluntary_contrib_percentage, len(incomes)))
-    Y[Y == 0] = 1
+    incomes = np.arange(500, salary_top_range + 500, 1000)
+    X, Y = np.meshgrid(incomes, np.arange(500, max(incomes) * max_voluntary_contrib_percentage, len(incomes)))
     Z1 = np.empty(X.shape)
     Z2 = np.empty(X.shape)
 
