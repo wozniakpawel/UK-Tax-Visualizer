@@ -239,7 +239,7 @@ def plot_tax_savings_3d(salary_top_range=salary_top_range, max_voluntary_contrib
     ax2 = fig.add_subplot(122, projection='3d')
 
     incomes = np.arange(500, salary_top_range + 500, 1000)
-    X, Y = np.meshgrid(incomes, np.arange(500, max(incomes) * max_voluntary_contrib_percentage, len(incomes)))
+    X, Y = np.meshgrid(incomes, np.arange(500, max(incomes) * max_voluntary_contrib_percentage, 100))
     Z1 = np.empty(X.shape)
     Z2 = np.empty(X.shape)
 
