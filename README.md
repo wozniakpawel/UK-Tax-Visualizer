@@ -1,3 +1,7 @@
+# Project deprecated
+
+This project is now deprecated and superseded by [cooltaxtool](https://github.com/wozniakpawel/cooltaxtool)
+
 # UK-Tax-Visualizer
 
 This Python script is designed to help individuals in the UK understand and optimize their tax situation. It provides detailed tax breakdowns for a specified gross income and allows you to explore the effects of voluntary pension contributions on your tax savings.
